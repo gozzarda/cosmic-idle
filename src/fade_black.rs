@@ -10,7 +10,10 @@ use wayland_protocols::wp::{
     single_pixel_buffer::v1::client::wp_single_pixel_buffer_manager_v1,
     viewporter::client::wp_viewport,
 };
-use wayland_protocols_wlr::layer_shell::v1::client::{zwlr_layer_shell_v1, zwlr_layer_surface_v1};
+use wayland_protocols_wlr::{
+    layer_shell::v1::client::{zwlr_layer_shell_v1, zwlr_layer_surface_v1},
+    output_power_management::v1::client::zwlr_output_power_v1,
+};
 
 use crate::{State, StateInner};
 
@@ -130,13 +133,13 @@ impl Dispatch<wl_callback::WlCallback, wl_surface::WlSurface> for State {
                         && &fade_surface.surface == surface
                     {
                         if fade_surface.is_done() {
+                            output
+                                .output_power
+                                .set_mode(zwlr_output_power_v1::Mode::Off);
+                            output.fade_surface = None;
+
                             // All outputs are done fading
-                            if state
-                                .outputs
-                                .iter()
-                                .flat_map(|o| o.fade_surface.as_ref())
-                                .all(|s| s.is_done())
-                            {
+                            if state.outputs.iter().all(|o| o.fade_surface.is_none()) {
                                 state.fade_done();
                             }
                         } else {
