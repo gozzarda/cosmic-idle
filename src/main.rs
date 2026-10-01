@@ -147,15 +147,6 @@ impl State {
         }
     }
 
-    // Fade surfaces on all outputs have finished fading out
-    fn fade_done(&mut self) {
-        if let Some(command) = self
-            .system_actions
-            .get(&shortcuts::action::System::LockScreen)
-            .map_or("loginctl lock-session", |s| s.as_str());
-        crate::run_command(command.to_string());
-    }
-
     fn update_suspend_idle(&mut self, is_idle: bool) {
         if is_idle {
             let command = self
